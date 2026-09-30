@@ -1018,7 +1018,12 @@
         snapshot.forEach((doc) => {
           const data = doc.data(); const amt = parseFloat(data.amount) || 0;
           let rowDate = new Date();
-          if (data.date) { const p = data.date.split('-'); if (p.length === 3) rowDate = new Date(p[0], p[1] - 1, p[2]); }
+          if (data.date) { 
+            const parts = data.date.split('-'); 
+            if (parts.length === 3) {
+              rowDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+          }
           const isInc = (data.type.includes("Income") || data.type.includes("Borrowed") || data.type.includes("Received"));
           if (isInc) tInc += amt; else tExp += amt;
           if (rowDate.getMonth() === currM && rowDate.getFullYear() === currY) { if (isInc) mInc += amt; else mExp += amt; }
@@ -1029,6 +1034,9 @@
         const bal = tInc - tExp; const balEl = document.getElementById('dashBal');
         balEl.innerText = userCurrency + bal.toFixed(2); balEl.className = 'metric-value ' + (bal < 0 ? 'val-exp' : 'val-inc');
         renderReport();
+        if (window.activeSpecialDayId) {
+          viewSpecialDayReport(window.activeSpecialDayId);
+        }
       });
     }
 
@@ -1039,6 +1047,7 @@
       
       let fromDate = fromStr ? new Date(fromStr) : null;
       let toDate = toStr ? new Date(toStr) : null;
+      if (fromDate) fromDate.setHours(0, 0, 0, 0);
       if (toDate) toDate.setHours(23, 59, 59, 999);
 
       let list = rawData.filter(i => {
@@ -1106,11 +1115,13 @@
 
     function viewSpecialDayReport(id) {
       const ev = userSpecialDays.find(e => e.id === id); if (!ev) return;
+      window.activeSpecialDayId = id;
       document.getElementById('specialReportTitle').innerText = ev.title;
       document.getElementById('specialReportDates').innerText = `Duration: ${ev.startDate} to ${ev.endDate}`;
       
       let startD = new Date(ev.startDate);
       let endD = new Date(ev.endDate);
+      startD.setHours(0, 0, 0, 0);
       endD.setHours(23, 59, 59, 999);
 
       let specList = rawData.filter(i => i.parsedDate >= startD && i.parsedDate <= endD);
@@ -1133,7 +1144,10 @@
       document.getElementById('specRepExp').innerText = userCurrency + sExp.toFixed(2);
       document.getElementById('specialReportModal').style.display = 'flex';
     }
-    function closeSpecialReportModal() { document.getElementById('specialReportModal').style.display = 'none'; }
+    function closeSpecialReportModal() { 
+      window.activeSpecialDayId = null;
+      document.getElementById('specialReportModal').style.display = 'none'; 
+    }
 
     /* ROUTINE REGISTER */
     let currentRoutineTasksList = [];
