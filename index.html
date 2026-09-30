@@ -161,10 +161,15 @@
     .modal-header h3 { font-size: 17px; font-weight: 700; }
     .modal-close-btn { background: transparent; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; }
 
-    /* VEHICLE SUBTABS */
+    /* SUBTABS */
     .vehicle-subtab-group { display: flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius-full); gap: 4px; margin-bottom: 16px; }
     .vehicle-subtab { flex: 1; border: none; padding: 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; background: transparent; color: var(--text-muted); cursor: pointer; text-align: center; }
     .vehicle-subtab.active { background: var(--vehicle); color: white; }
+
+    /* ROUTINE CHECKLIST ITEM */
+    .routine-item { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid var(--border); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 8px; }
+    .routine-item label { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; cursor: pointer; flex: 1; }
+    .routine-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; }
 
     /* REMINDER CARDS */
     .reminder-card { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -307,6 +312,10 @@
             <i class="fa-solid fa-gas-pump"></i>
             <span>Vehicle Tracker</span>
           </div>
+          <div class="grid-menu-card" onclick="switchView('routine')" style="grid-column: span 2; background: linear-gradient(135deg, #0f172a, #334155);">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Routine Register</span>
+          </div>
         </div>
       </div>
 
@@ -368,46 +377,69 @@
       <div id="reportSection" style="display: none;">
         <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div id="printableReportArea">
-          <div class="filter-grid" style="grid-template-columns: 1fr; margin-bottom: 8px;">
-            <div class="select-wrap">
-              <select id="filterType" class="input-box" onchange="renderReport()">
-                <option value="ALL">All Transactions</option>
-                <option value="INCOME">Income Only</option>
-                <option value="EXPENSE">Expense Only</option>
-                <option value="LOAN">Loans / Debts</option>
-              </select>
+          <!-- Report Subtabs -->
+          <div class="vehicle-subtab-group" style="margin-bottom: 12px;">
+            <button type="button" class="vehicle-subtab active" id="repSubtabReg" onclick="switchReportTab('regular')">📊 Regular Report</button>
+            <button type="button" class="vehicle-subtab" id="repSubtabSpecial" onclick="switchReportTab('special')">⭐ Special Days</button>
+          </div>
+
+          <!-- Regular Report View -->
+          <div id="regularReportView">
+            <div class="filter-grid" style="grid-template-columns: 1fr; margin-bottom: 8px;">
+              <div class="select-wrap">
+                <select id="filterType" class="input-box" onchange="renderReport()">
+                  <option value="ALL">All Transactions</option>
+                  <option value="INCOME">Income Only</option>
+                  <option value="EXPENSE">Expense Only</option>
+                  <option value="LOAN">Loans / Debts</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- From and To Date Filter -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px; margin-bottom: 2px;">From Date</label>
+                <input type="date" id="filterFromDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px; margin-bottom: 2px;">To Date</label>
+                <input type="date" id="filterToDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+              </div>
+            </div>
+
+            <div class="filter-summary-box">
+              <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
+              <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Details</th>
+                    <th>Amount</th>
+                    <th style="text-align: right;" class="action-icons">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableRows"></tbody>
+              </table>
             </div>
           </div>
 
-          <!-- From and To Date Filter -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 11px; margin-bottom: 2px;">From Date</label>
-              <input type="date" id="filterFromDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+          <!-- Special Days Report View -->
+          <div id="specialReportView" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 14px;">Special Days Management</h4>
+              <button type="button" class="btn-main" style="width: auto; padding: 6px 12px; font-size: 12px; background: var(--reminder);" onclick="openAddSpecialDayModal()">
+                <i class="fa-solid fa-plus"></i> Add Special Day
+              </button>
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label style="font-size: 11px; margin-bottom: 2px;">To Date</label>
-              <input type="date" id="filterToDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+            <div id="specialDaysListContainer">
+              <p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No special days added</p>
             </div>
           </div>
 
-          <div class="filter-summary-box">
-            <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
-            <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
-          </div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Details</th>
-                  <th>Amount</th>
-                  <th style="text-align: right;" class="action-icons">Action</th>
-                </tr>
-              </thead>
-              <tbody id="reportTableRows"></tbody>
-            </table>
-          </div>
         </div>
       </div>
 
@@ -552,6 +584,83 @@
 
       </div>
 
+      <!-- 5. ROUTINE REGISTER SECTION -->
+      <div id="routineSection" style="display: none;">
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Routine Register</h3>
+          <input type="date" id="routineDateInput" class="input-box" style="width: auto; padding: 6px 12px; font-size: 13px;" onchange="loadRoutineForSelectedDate()">
+        </div>
+
+        <div style="background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px;">Checklist for Today:</div>
+          <div id="routineChecklistContainer"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Add Custom Routine Task</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="newRoutineTaskName" class="input-box" placeholder="e.g. Read Quran, Morning Walk...">
+            <button type="button" class="btn-main" style="width: auto; padding: 0 16px;" onclick="addNewRoutineTask()">Add</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD SPECIAL DAY MODAL -->
+  <div class="modal-overlay" id="addSpecialDayModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Add Special Day / Event</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAddSpecialDayModal()">✕</button>
+      </div>
+      <form onsubmit="handleNewSpecialDaySubmit(event)">
+        <div class="form-group">
+          <label>Event Name</label>
+          <input type="text" id="specialTitle" class="input-box" placeholder="e.g. Annual Camp, Tour, Exhibition" required>
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="specialStartDate" class="input-box" required>
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="specialEndDate" class="input-box" required>
+        </div>
+        <div class="form-actions-group">
+          <button type="button" class="btn-cancel-action" onclick="closeAddSpecialDayModal()">Cancel</button>
+          <button type="submit" class="btn-main btn-save-action" style="background: var(--reminder);">Save Special Day</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SPECIAL DAY REPORT VIEW MODAL -->
+  <div class="modal-overlay" id="specialReportModal">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="specialReportTitle">Event Report</h3>
+        <button type="button" class="modal-close-btn" onclick="closeSpecialReportModal()">✕</button>
+      </div>
+      <div style="margin-bottom: 12px; font-size: 13px; color: var(--text-muted);" id="specialReportDates"></div>
+      <div class="filter-summary-box" style="margin-bottom: 12px;">
+        <span style="color: var(--income);">Income: <strong id="specRepInc">0.00</strong></span>
+        <span style="color: var(--expense);">Expense: <strong id="specRepExp">0.00</strong></span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Details</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody id="specialReportTableRows"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -689,22 +798,26 @@
 
     let currentUser = null, isSignUp = false;
     let userCurrency = localStorage.getItem('app_currency') || '₹';
-    let rawData = [], userVehicles = [], userReminders = [], activeVehicleId = null;
+    let rawData = [], userVehicles = [], userReminders = [], userSpecialDays = [], routineTasks = [], activeVehicleId = null;
     let calcTargetInputId = 'entryAmount';
-    let unsubSnapshot = null, unsubVehicles = null, unsubFuelHistory = null, unsubServiceHistory = null, unsubReminders = null;
+    let unsubSnapshot = null, unsubVehicles = null, unsubFuelHistory = null, unsubServiceHistory = null, unsubReminders = null, unsubSpecialDays = null, unsubRoutines = null;
 
     const defaultCategories = {
       income: ["Salary", "Business", "Others"],
       expense: ["Food & Groceries", "Travel & Fuel", "House Expenses", "Others"]
     };
 
+    const defaultRoutineItems = ["Drink Water (Morning)", "Morning Prayers / Adhkar", "Read Quran", "Children Homework Check", "Evening Adhkar"];
+
     const todayFormatted = new Date().toISOString().split('T')[0];
     document.getElementById('entryDate').value = todayFormatted;
     document.getElementById('fuelDate').value = todayFormatted;
     document.getElementById('serviceDate').value = todayFormatted;
     document.getElementById('remindDueDate').value = todayFormatted;
+    document.getElementById('specialStartDate').value = todayFormatted;
+    document.getElementById('specialEndDate').value = todayFormatted;
+    document.getElementById('routineDateInput').value = todayFormatted;
 
-    // Set default From and To dates for this month in reports
     const nowInit = new Date();
     const firstDayInit = new Date(nowInit.getFullYear(), nowInit.getMonth(), 1).toISOString().split('T')[0];
     const lastDayInit = new Date(nowInit.getFullYear(), nowInit.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -724,8 +837,17 @@
         bindUserTransactions(user.uid);
         bindUserReminders(user.uid);
         bindUserVehicles(user.uid);
+        bindUserSpecialDays(user.uid);
+        loadRoutineForSelectedDate();
       } else {
         currentUser = null;
+        if (unsubSnapshot) unsubSnapshot();
+        if (unsubVehicles) unsubVehicles();
+        if (unsubFuelHistory) unsubFuelHistory();
+        if (unsubServiceHistory) unsubServiceHistory();
+        if (unsubReminders) unsubReminders();
+        if (unsubSpecialDays) unsubSpecialDays();
+        if (unsubRoutines) unsubRoutines();
         document.getElementById('mainAppView').style.display = 'none';
         document.getElementById('authView').style.display = 'block';
       }
@@ -772,7 +894,22 @@
       document.getElementById('reportSection').style.display = (view === 'report') ? 'block' : 'none';
       document.getElementById('reminderSection').style.display = (view === 'reminder') ? 'block' : 'none';
       document.getElementById('vehicleSection').style.display = (view === 'vehicle') ? 'block' : 'none';
+      document.getElementById('routineSection').style.display = (view === 'routine') ? 'block' : 'none';
       if (view === 'report') renderReport();
+    }
+
+    function switchReportTab(tab) {
+      if (tab === 'regular') {
+        document.getElementById('repSubtabReg').classList.add('active');
+        document.getElementById('repSubtabSpecial').classList.remove('active');
+        document.getElementById('regularReportView').style.display = 'block';
+        document.getElementById('specialReportView').style.display = 'none';
+      } else {
+        document.getElementById('repSubtabSpecial').classList.add('active');
+        document.getElementById('repSubtabReg').classList.remove('active');
+        document.getElementById('specialReportView').style.display = 'block';
+        document.getElementById('regularReportView').style.display = 'none';
+      }
     }
 
     function setMode(m) {
@@ -874,6 +1011,111 @@
         category: document.getElementById('entryCategory').value, amount: parseFloat(document.getElementById('entryAmount').value) || 0,
         description: document.getElementById('entryDesc').value || "-", person: document.getElementById('entryPerson').value || "-"
       }).then(() => { resetEntryForm(); switchView('home'); });
+    }
+
+    /* SPECIAL DAYS */
+    function openAddSpecialDayModal() { document.getElementById('addSpecialDayModal').style.display = 'flex'; }
+    function closeAddSpecialDayModal() { document.getElementById('addSpecialDayModal').style.display = 'none'; }
+    function handleNewSpecialDaySubmit(e) {
+      e.preventDefault();
+      db.collection("users").doc(currentUser.uid).collection("special_days").add({
+        title: document.getElementById('specialTitle').value,
+        startDate: document.getElementById('specialStartDate').value,
+        endDate: document.getElementById('specialEndDate').value
+      }).then(() => closeAddSpecialDayModal());
+    }
+    function bindUserSpecialDays(uid) {
+      if (unsubSpecialDays) unsubSpecialDays();
+      unsubSpecialDays = db.collection("users").doc(uid).collection("special_days").orderBy("startDate", "desc").onSnapshot((snap) => {
+        userSpecialDays = []; snap.forEach(doc => userSpecialDays.push({ id: doc.id, ...doc.data() }));
+        const container = document.getElementById('specialDaysListContainer'); container.innerHTML = '';
+        if (userSpecialDays.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">No special days added</p>`; return; }
+        userSpecialDays.forEach(ev => {
+          const card = document.createElement('div'); card.className = 'reminder-card';
+          card.innerHTML = `<div><div class="reminder-title">${ev.title}</div><div class="reminder-date">From: ${ev.startDate} &nbsp;|&nbsp; To: ${ev.endDate}</div><button class="btn-pay-now" style="background:var(--primary); margin-top:6px;" onclick="viewSpecialDayReport('${ev.id}')">View Report</button></div><div><i class="fa-solid fa-trash icon-del" onclick="deleteSpecialDay('${ev.id}')"></i></div>`;
+          container.appendChild(card);
+        });
+      });
+    }
+    function deleteSpecialDay(id) { db.collection("users").doc(currentUser.uid).collection("special_days").doc(id).delete(); }
+
+    function viewSpecialDayReport(id) {
+      const ev = userSpecialDays.find(e => e.id === id); if (!ev) return;
+      document.getElementById('specialReportTitle').innerText = ev.title;
+      document.getElementById('specialReportDates').innerText = `Duration: ${ev.startDate} to ${ev.endDate}`;
+      
+      let startD = new Date(ev.startDate);
+      let endD = new Date(ev.endDate);
+      endD.setHours(23, 59, 59, 999);
+
+      let specList = rawData.filter(i => i.parsedDate >= startD && i.parsedDate <= endD);
+      specList.sort((a, b) => b.parsedDate - a.parsedDate);
+
+      let sInc = 0, sExp = 0; const tbody = document.getElementById('specialReportTableRows'); tbody.innerHTML = '';
+      if (specList.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">No records found in this duration.</td></tr>`; }
+      else {
+        specList.forEach(r => {
+          const amt = parseFloat(r.amount) || 0;
+          const isInc = r.type.includes("Income") || r.type.includes("Borrowed") || r.type.includes("Received");
+          if (isInc) sInc += amt; else sExp += amt;
+          const dtStr = `${String(r.parsedDate.getDate()).padStart(2, '0')}-${String(r.parsedDate.getMonth() + 1).padStart(2, '0')}-${r.parsedDate.getFullYear()}`;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${dtStr}</td><td><strong>${r.category}</strong><br><small>${r.description || ''}</small></td><td class="badge-amt" style="color:${isInc ? 'var(--income)' : 'var(--expense)'};">${isInc ? '+' : '-'}${userCurrency}${amt.toFixed(2)}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+      document.getElementById('specRepInc').innerText = userCurrency + sInc.toFixed(2);
+      document.getElementById('specRepExp').innerText = userCurrency + sExp.toFixed(2);
+      document.getElementById('specialReportModal').style.display = 'flex';
+    }
+    function closeSpecialReportModal() { document.getElementById('specialReportModal').style.display = 'none'; }
+
+    /* ROUTINE REGISTER */
+    function loadRoutineForSelectedDate() {
+      const selDate = document.getElementById('routineDateInput').value;
+      if (!currentUser || !selDate) return;
+      if (unsubRoutines) unsubRoutines();
+
+      unsubRoutines = db.collection("users").doc(currentUser.uid).collection("routine_logs").doc(selDate).onSnapshot((doc) => {
+        const container = document.getElementById('routineChecklistContainer');
+        container.innerHTML = '';
+        let completedTasks = doc.exists ? (doc.data().completed || []) : [];
+
+        defaultRoutineItems.forEach((task, idx) => {
+          const isChecked = completedTasks.includes(task);
+          const div = document.createElement('div');
+          div.className = 'routine-item';
+          div.innerHTML = `<label><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRoutineTask('${task}', this.checked)"> ${task}</label>`;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function toggleRoutineTask(taskName, isDone) {
+      const selDate = document.getElementById('routineDateInput').value;
+      if (!currentUser || !selDate) return;
+      const ref = db.collection("users").doc(currentUser.uid).collection("routine_logs").doc(selDate);
+
+      db.runTransaction((transaction) => {
+        return transaction.get(ref).then((doc) => {
+          let list = doc.exists ? (doc.data().completed || []) : [];
+          if (isDone) {
+            if (!list.includes(taskName)) list.push(taskName);
+          } else {
+            list = list.filter(t => t !== taskName);
+          }
+          transaction.set(ref, { completed: list }, { merge: true });
+        });
+      }).catch(() => {});
+    }
+
+    function addNewRoutineTask() {
+      const name = document.getElementById('newRoutineTaskName').value.trim();
+      if (!name) return;
+      defaultRoutineItems.push(name);
+      document.getElementById('newRoutineTaskName').value = '';
+      loadRoutineForSelectedDate();
+      alert("New routine task added!");
     }
 
     /* REMINDERS */
