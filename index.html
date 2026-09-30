@@ -186,13 +186,6 @@
     .c-btn.c-op { background: var(--primary-light); color: var(--primary); border-color: transparent; }
     .c-btn.c-eq { background: var(--primary); color: white; border-color: transparent; grid-column: span 2; }
     .c-btn.c-del { background: #fee2e2; color: #ef4444; border-color: transparent; }
-
-    @media print {
-      body * { visibility: hidden; }
-      #printableRoutineArea, #printableRoutineArea * { visibility: visible; }
-      #printableRoutineArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
-      .action-icons, .btn-main, .vehicle-subtab-group { display: none !important; }
-    }
   </style>
 </head>
 <body>
@@ -319,7 +312,11 @@
             <i class="fa-solid fa-gas-pump"></i>
             <span>Vehicle Tracker</span>
           </div>
-          <div class="grid-menu-card" onclick="switchView('routine')" style="grid-column: span 2; background: linear-gradient(135deg, #0f172a, #334155);">
+          <div class="grid-menu-card" onclick="switchView('specialDays')" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i class="fa-solid fa-star"></i>
+            <span>Special Days</span>
+          </div>
+          <div class="grid-menu-card" onclick="switchView('routine')" style="background: linear-gradient(135deg, #0f172a, #334155);">
             <i class="fa-solid fa-list-check"></i>
             <span>Routine Register</span>
           </div>
@@ -384,69 +381,46 @@
       <div id="reportSection" style="display: none;">
         <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div id="printableReportArea">
-          <!-- Report Subtabs -->
-          <div class="vehicle-subtab-group" style="margin-bottom: 12px;">
-            <button type="button" class="vehicle-subtab active" id="repSubtabReg" onclick="switchReportTab('regular')">📊 Regular Report</button>
-            <button type="button" class="vehicle-subtab" id="repSubtabSpecial" onclick="switchReportTab('special')">⭐ Special Days</button>
-          </div>
-
-          <!-- Regular Report View -->
-          <div id="regularReportView">
-            <div class="filter-grid" style="grid-template-columns: 1fr; margin-bottom: 8px;">
-              <div class="select-wrap">
-                <select id="filterType" class="input-box" onchange="renderReport()">
-                  <option value="ALL">All Transactions</option>
-                  <option value="INCOME">Income Only</option>
-                  <option value="EXPENSE">Expense Only</option>
-                  <option value="LOAN">Loans / Debts</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- From and To Date Filter -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label style="font-size: 11px; margin-bottom: 2px;">From Date</label>
-                <input type="date" id="filterFromDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
-              </div>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label style="font-size: 11px; margin-bottom: 2px;">To Date</label>
-                <input type="date" id="filterToDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
-              </div>
-            </div>
-
-            <div class="filter-summary-box">
-              <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
-              <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Details</th>
-                    <th>Amount</th>
-                    <th style="text-align: right;" class="action-icons">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="reportTableRows"></tbody>
-              </table>
+          <div class="filter-grid" style="grid-template-columns: 1fr; margin-bottom: 8px;">
+            <div class="select-wrap">
+              <select id="filterType" class="input-box" onchange="renderReport()">
+                <option value="ALL">All Transactions</option>
+                <option value="INCOME">Income Only</option>
+                <option value="EXPENSE">Expense Only</option>
+                <option value="LOAN">Loans / Debts</option>
+              </select>
             </div>
           </div>
 
-          <!-- Special Days Report View -->
-          <div id="specialReportView" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h4 style="font-size: 14px;">Special Days Management</h4>
-              <button type="button" class="btn-main" style="width: auto; padding: 6px 12px; font-size: 12px; background: var(--reminder);" onclick="openAddSpecialDayModal()">
-                <i class="fa-solid fa-plus"></i> Add Special Day
-              </button>
+          <!-- From and To Date Filter -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; margin-bottom: 2px;">From Date</label>
+              <input type="date" id="filterFromDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
             </div>
-            <div id="specialDaysListContainer">
-              <p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No special days added</p>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; margin-bottom: 2px;">To Date</label>
+              <input type="date" id="filterToDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
             </div>
           </div>
 
+          <div class="filter-summary-box">
+            <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
+            <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Details</th>
+                  <th>Amount</th>
+                  <th style="text-align: right;" class="action-icons">Action</th>
+                </tr>
+              </thead>
+              <tbody id="reportTableRows"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -591,18 +565,30 @@
 
       </div>
 
-      <!-- 5. ROUTINE REGISTER SECTION -->
+      <!-- 5. SPECIAL DAYS SECTION -->
+      <div id="specialDaysSection" style="display: none;">
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-star" style="margin-right: 6px; color: var(--reminder);"></i> Special Days Management</h3>
+          <button type="button" class="btn-main" style="width: auto; padding: 6px 14px; font-size: 12px; background: var(--reminder);" onclick="openAddSpecialDayModal()">
+            <i class="fa-solid fa-plus"></i> Add Special Day
+          </button>
+        </div>
+        <div id="mainSpecialDaysListContainer">
+          <p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No special days added</p>
+        </div>
+      </div>
+
+      <!-- 6. ROUTINE REGISTER SECTION -->
       <div id="routineSection" style="display: none;">
         <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div id="printableRoutineArea">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h3 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Routine Register</h3>
-            <div style="display: flex; gap: 6px;">
-              <input type="date" id="routineDateInput" class="input-box" style="width: auto; padding: 6px 10px; font-size: 12px;" onchange="loadRoutineForSelectedDate()">
-            </div>
+            <input type="date" id="routineDateInput" class="input-box" style="width: auto; padding: 6px 10px; font-size: 12px;" onchange="loadRoutineForSelectedDate()">
           </div>
 
-          <!-- Routine Subtabs: Daily Checklist vs Monthly Report & PDF -->
+          <!-- Routine Subtabs -->
           <div class="vehicle-subtab-group" style="margin-bottom: 12px;">
             <button type="button" class="vehicle-subtab active" id="routineSubtabDaily" onclick="switchRoutineTab('daily')">✅ Daily Checklist</button>
             <button type="button" class="vehicle-subtab" id="routineSubtabReport" onclick="switchRoutineTab('report')">📈 Monthly Report & PDF</button>
@@ -943,6 +929,7 @@
       document.getElementById('reportSection').style.display = (view === 'report') ? 'block' : 'none';
       document.getElementById('reminderSection').style.display = (view === 'reminder') ? 'block' : 'none';
       document.getElementById('vehicleSection').style.display = (view === 'vehicle') ? 'block' : 'none';
+      document.getElementById('specialDaysSection').style.display = (view === 'specialDays') ? 'block' : 'none';
       document.getElementById('routineSection').style.display = (view === 'routine') ? 'block' : 'none';
       if (view === 'report') renderReport();
       if (view === 'routine') loadRoutineForSelectedDate();
@@ -1093,7 +1080,7 @@
       if (unsubSpecialDays) unsubSpecialDays();
       unsubSpecialDays = db.collection("users").doc(uid).collection("special_days").orderBy("startDate", "desc").onSnapshot((snap) => {
         userSpecialDays = []; snap.forEach(doc => userSpecialDays.push({ id: doc.id, ...doc.data() }));
-        const container = document.getElementById('specialDaysListContainer'); container.innerHTML = '';
+        const container = document.getElementById('mainSpecialDaysListContainer'); container.innerHTML = '';
         if (userSpecialDays.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">No special days added</p>`; return; }
         userSpecialDays.forEach(ev => {
           const card = document.createElement('div'); card.className = 'reminder-card';
