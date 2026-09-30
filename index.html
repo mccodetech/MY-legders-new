@@ -593,7 +593,10 @@
         </div>
 
         <div style="background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
-          <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px;">Checklist for Today:</div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Checklist for Today:</span>
+            <button type="button" class="btn-main" style="width: auto; padding: 6px 12px; font-size: 11px; background: var(--income);" onclick="saveRoutineForSelectedDate()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+          </div>
           <div id="routineChecklistContainer"></div>
         </div>
 
@@ -798,7 +801,7 @@
 
     let currentUser = null, isSignUp = false;
     let userCurrency = localStorage.getItem('app_currency') || '₹';
-    let rawData = [], userVehicles = [], userReminders = [], userSpecialDays = [], routineTasks = [], activeVehicleId = null;
+    let rawData = [], userVehicles = [], userReminders = [], userSpecialDays = [], activeVehicleId = null;
     let calcTargetInputId = 'entryAmount';
     let unsubSnapshot = null, unsubVehicles = null, unsubFuelHistory = null, unsubServiceHistory = null, unsubReminders = null, unsubSpecialDays = null, unsubRoutines = null;
 
@@ -1071,6 +1074,8 @@
     function closeSpecialReportModal() { document.getElementById('specialReportModal').style.display = 'none'; }
 
     /* ROUTINE REGISTER */
+    let currentRoutineTasksList = [];
+
     function loadRoutineForSelectedDate() {
       const selDate = document.getElementById('routineDateInput').value;
       if (!currentUser || !selDate) return;
@@ -1080,42 +1085,65 @@
         const container = document.getElementById('routineChecklistContainer');
         container.innerHTML = '';
         let completedTasks = doc.exists ? (doc.data().completed || []) : [];
+        currentRoutineTasksList = [...defaultRoutineItems];
 
-        defaultRoutineItems.forEach((task, idx) => {
-          const isChecked = completedTasks.includes(task);
-          const div = document.createElement('div');
-          div.className = 'routine-item';
-          div.innerHTML = `<label><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRoutineTask('${task}', this.checked)"> ${task}</label>`;
-          container.appendChild(div);
+        // Also check if user added custom tasks in general
+        db.collection("users").doc(currentUser.uid).collection("custom_routines").get().then((snap) => {
+          snap.forEach(d => {
+            if (!currentRoutineTasksList.includes(d.data().name)) {
+              currentRoutineTasksList.push(d.data().name);
+            }
+          });
+
+          container.innerHTML = '';
+          currentRoutineTasksList.forEach((task) => {
+            const isChecked = completedTasks.includes(task);
+            const div = document.createElement('div');
+            div.className = 'routine-item';
+            div.innerHTML = `<label><input type="checkbox" value="${task}" ${isChecked ? 'checked' : ''}> ${task}</label><i class="fa-solid fa-trash icon-del" onclick="deleteCustomRoutineTask('${task}')" title="Delete Task"></i>`;
+            container.appendChild(div);
+          });
         });
       });
     }
 
-    function toggleRoutineTask(taskName, isDone) {
+    function saveRoutineForSelectedDate() {
       const selDate = document.getElementById('routineDateInput').value;
       if (!currentUser || !selDate) return;
-      const ref = db.collection("users").doc(currentUser.uid).collection("routine_logs").doc(selDate);
+      const checkboxes = document.querySelectorAll('#routineChecklistContainer input[type="checkbox"]');
+      let completed = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) completed.push(cb.value);
+      });
 
-      db.runTransaction((transaction) => {
-        return transaction.get(ref).then((doc) => {
-          let list = doc.exists ? (doc.data().completed || []) : [];
-          if (isDone) {
-            if (!list.includes(taskName)) list.push(taskName);
-          } else {
-            list = list.filter(t => t !== taskName);
-          }
-          transaction.set(ref, { completed: list }, { merge: true });
-        });
-      }).catch(() => {});
+      db.collection("users").doc(currentUser.uid).collection("routine_logs").doc(selDate).set({
+        completed: completed
+      }, { merge: true }).then(() => {
+        alert("Routine progress saved successfully!");
+      });
     }
 
     function addNewRoutineTask() {
       const name = document.getElementById('newRoutineTaskName').value.trim();
       if (!name) return;
-      defaultRoutineItems.push(name);
-      document.getElementById('newRoutineTaskName').value = '';
-      loadRoutineForSelectedDate();
-      alert("New routine task added!");
+      db.collection("users").doc(currentUser.uid).collection("custom_routines").add({ name: name }).then(() => {
+        document.getElementById('newRoutineTaskName').value = '';
+        loadRoutineForSelectedDate();
+        alert("New routine task added!");
+      });
+    }
+
+    function deleteCustomRoutineTask(taskName) {
+      if (defaultRoutineItems.includes(taskName)) {
+        alert("Default tasks cannot be deleted.");
+        return;
+      }
+      if (confirm(`Delete routine task "${taskName}"?`)) {
+        db.collection("users").doc(currentUser.uid).collection("custom_routines").where("name", "==", taskName).get().then((snap) => {
+          snap.forEach(doc => doc.ref.delete());
+          loadRoutineForSelectedDate();
+        });
+      }
     }
 
     /* REMINDERS */
