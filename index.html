@@ -176,7 +176,7 @@
     /* CALCULATOR */
     .calc-display { width: 100%; height: 48px; background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-md); text-align: right; padding: 8px 14px; font-size: 20px; font-weight: 800; margin-bottom: 14px; outline: none; }
     .calc-pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .c-btn { padding: 12px; font-size: 16px; font-weight: 700; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+    .c-btn { padding: 12px; font-size: 16px; font-weight: 700; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
     .c-btn:active { background: #e2e8f0; }
     .c-btn.c-op { background: var(--primary-light); color: var(--primary); border-color: transparent; }
     .c-btn.c-eq { background: var(--primary); color: white; border-color: transparent; grid-column: span 2; }
@@ -368,13 +368,7 @@
       <div id="reportSection" style="display: none;">
         <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div id="printableReportArea">
-          <div class="filter-grid">
-            <div class="select-wrap">
-              <select id="filterMonth" class="input-box" onchange="renderReport()">
-                <option value="THIS_MONTH" selected>This Month</option>
-                <option value="ALL">All Months</option>
-              </select>
-            </div>
+          <div class="filter-grid" style="grid-template-columns: 1fr; margin-bottom: 8px;">
             <div class="select-wrap">
               <select id="filterType" class="input-box" onchange="renderReport()">
                 <option value="ALL">All Transactions</option>
@@ -384,6 +378,19 @@
               </select>
             </div>
           </div>
+
+          <!-- From and To Date Filter -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; margin-bottom: 2px;">From Date</label>
+              <input type="date" id="filterFromDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px; margin-bottom: 2px;">To Date</label>
+              <input type="date" id="filterToDate" class="input-box" style="padding: 8px;" onchange="renderReport()">
+            </div>
+          </div>
+
           <div class="filter-summary-box">
             <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
             <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
@@ -697,6 +704,13 @@
     document.getElementById('serviceDate').value = todayFormatted;
     document.getElementById('remindDueDate').value = todayFormatted;
 
+    // Set default From and To dates for this month in reports
+    const nowInit = new Date();
+    const firstDayInit = new Date(nowInit.getFullYear(), nowInit.getMonth(), 1).toISOString().split('T')[0];
+    const lastDayInit = new Date(nowInit.getFullYear(), nowInit.getMonth() + 1, 0).toISOString().split('T')[0];
+    document.getElementById('filterFromDate').value = firstDayInit;
+    document.getElementById('filterToDate').value = lastDayInit;
+
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
@@ -803,7 +817,7 @@
           const data = doc.data(); const amt = parseFloat(data.amount) || 0;
           let rowDate = new Date();
           if (data.date) { const p = data.date.split('-'); if (p.length === 3) rowDate = new Date(p[0], p[1] - 1, p[2]); }
-          const isInc = (data.type.includes("Income") || data.type.includes("Borrowed") || data.type.includes("Received") || data.type.includes("വരവ്"));
+          const isInc = (data.type.includes("Income") || data.type.includes("Borrowed") || data.type.includes("Received"));
           if (isInc) tInc += amt; else tExp += amt;
           if (rowDate.getMonth() === currM && rowDate.getFullYear() === currY) { if (isInc) mInc += amt; else mExp += amt; }
           rawData.push({ id: doc.id, ...data, parsedDate: rowDate });
@@ -817,23 +831,30 @@
     }
 
     function renderReport() {
-      const mFilter = document.getElementById('filterMonth').value;
+      const fromStr = document.getElementById('filterFromDate').value;
+      const toStr = document.getElementById('filterToDate').value;
       const tFilter = document.getElementById('filterType').value;
-      const now = new Date(), currM = now.getMonth(), currY = now.getFullYear();
+      
+      let fromDate = fromStr ? new Date(fromStr) : null;
+      let toDate = toStr ? new Date(toStr) : null;
+      if (toDate) toDate.setHours(23, 59, 59, 999);
+
       let list = rawData.filter(i => {
-        if (mFilter === "THIS_MONTH" && (i.parsedDate.getMonth() !== currM || i.parsedDate.getFullYear() !== currY)) return false;
-        if (tFilter === "INCOME") return i.type.includes("Income") || i.type.includes("Borrowed");
-        if (tFilter === "EXPENSE") return i.type.includes("Expense") || i.type.includes("ചെലവ്");
-        if (tFilter === "LOAN") return i.type.includes("Loan") || i.type.includes("കടം");
+        if (fromDate && i.parsedDate < fromDate) return false;
+        if (toDate && i.parsedDate > toDate) return false;
+        if (tFilter === "INCOME" && !(i.type.includes("Income") || i.type.includes("Borrowed"))) return false;
+        if (tFilter === "EXPENSE" && !i.type.includes("Expense")) return false;
+        if (tFilter === "LOAN" && !i.type.includes("Loan")) return false;
         return true;
       });
+
       list.sort((a, b) => b.parsedDate - a.parsedDate);
       let sumI = 0, sumE = 0; const tbody = document.getElementById('reportTableRows'); tbody.innerHTML = '';
       if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">No records found.</td></tr>`; }
       else {
         list.forEach(r => {
           const amt = parseFloat(r.amount) || 0;
-          const isInc = r.type.includes("Income") || r.type.includes("Borrowed") || r.type.includes("Received") || r.type.includes("വരവ്");
+          const isInc = r.type.includes("Income") || r.type.includes("Borrowed") || r.type.includes("Received");
           if (isInc) sumI += amt; else sumE += amt;
           const dtStr = `${String(r.parsedDate.getDate()).padStart(2, '0')}-${String(r.parsedDate.getMonth() + 1).padStart(2, '0')}-${r.parsedDate.getFullYear()}`;
           const tr = document.createElement('tr');
