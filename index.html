@@ -186,6 +186,13 @@
     .c-btn.c-op { background: var(--primary-light); color: var(--primary); border-color: transparent; }
     .c-btn.c-eq { background: var(--primary); color: white; border-color: transparent; grid-column: span 2; }
     .c-btn.c-del { background: #fee2e2; color: #ef4444; border-color: transparent; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableRoutineArea, #printableRoutineArea * { visibility: visible; }
+      #printableRoutineArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
+      .action-icons, .btn-main, .vehicle-subtab-group { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -587,25 +594,63 @@
       <!-- 5. ROUTINE REGISTER SECTION -->
       <div id="routineSection" style="display: none;">
         <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Routine Register</h3>
-          <input type="date" id="routineDateInput" class="input-box" style="width: auto; padding: 6px 12px; font-size: 13px;" onchange="loadRoutineForSelectedDate()">
-        </div>
-
-        <div style="background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
-          <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <span>Checklist for Today:</span>
-            <button type="button" class="btn-main" style="width: auto; padding: 6px 12px; font-size: 11px; background: var(--income);" onclick="saveRoutineForSelectedDate()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+        <div id="printableRoutineArea">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 700;"><i class="fa-solid fa-list-check" style="margin-right: 6px;"></i> Daily Routine Register</h3>
+            <div style="display: flex; gap: 6px;">
+              <input type="date" id="routineDateInput" class="input-box" style="width: auto; padding: 6px 10px; font-size: 12px;" onchange="loadRoutineForSelectedDate()">
+            </div>
           </div>
-          <div id="routineChecklistContainer"></div>
-        </div>
 
-        <div class="form-group">
-          <label>Add Custom Routine Task</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="newRoutineTaskName" class="input-box" placeholder="e.g. Read Quran, Morning Walk...">
-            <button type="button" class="btn-main" style="width: auto; padding: 0 16px;" onclick="addNewRoutineTask()">Add</button>
+          <!-- Routine Subtabs: Daily Checklist vs Monthly Report & PDF -->
+          <div class="vehicle-subtab-group" style="margin-bottom: 12px;">
+            <button type="button" class="vehicle-subtab active" id="routineSubtabDaily" onclick="switchRoutineTab('daily')">✅ Daily Checklist</button>
+            <button type="button" class="vehicle-subtab" id="routineSubtabReport" onclick="switchRoutineTab('report')">📈 Monthly Report & PDF</button>
           </div>
+
+          <!-- Daily View -->
+          <div id="routineDailyView">
+            <div style="background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Checklist (1 Pt per task):</span>
+                <button type="button" class="btn-main" style="width: auto; padding: 6px 12px; font-size: 11px; background: var(--income);" onclick="saveRoutineForSelectedDate()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+              </div>
+              <div id="routineChecklistContainer"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Add Custom Routine Task</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="newRoutineTaskName" class="input-box" placeholder="e.g. Read Quran, Morning Walk...">
+                <button type="button" class="btn-main" style="width: auto; padding: 0 16px;" onclick="addNewRoutineTask()">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Report View -->
+          <div id="routineReportView" style="display: none;">
+            <div class="form-group">
+              <label>Select Month for Report</label>
+              <input type="month" id="routineReportMonth" class="input-box" onchange="loadRoutineMonthlyReport()">
+            </div>
+            <div class="filter-summary-box" style="margin-bottom: 12px;">
+              <span>Total Points Earned: <strong id="routineTotalPts" style="color:var(--income);">0</strong></span>
+              <button type="button" class="btn-main" style="width: auto; padding: 4px 10px; font-size: 11px; background: #475569;" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Completed Tasks</th>
+                    <th>Points</th>
+                  </tr>
+                </thead>
+                <tbody id="routineReportTableRows"></tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -820,6 +865,7 @@
     document.getElementById('specialStartDate').value = todayFormatted;
     document.getElementById('specialEndDate').value = todayFormatted;
     document.getElementById('routineDateInput').value = todayFormatted;
+    document.getElementById('routineReportMonth').value = todayFormatted.substring(0, 7);
 
     const nowInit = new Date();
     const firstDayInit = new Date(nowInit.getFullYear(), nowInit.getMonth(), 1).toISOString().split('T')[0];
@@ -899,6 +945,7 @@
       document.getElementById('vehicleSection').style.display = (view === 'vehicle') ? 'block' : 'none';
       document.getElementById('routineSection').style.display = (view === 'routine') ? 'block' : 'none';
       if (view === 'report') renderReport();
+      if (view === 'routine') loadRoutineForSelectedDate();
     }
 
     function switchReportTab(tab) {
@@ -912,6 +959,21 @@
         document.getElementById('repSubtabReg').classList.remove('active');
         document.getElementById('specialReportView').style.display = 'block';
         document.getElementById('regularReportView').style.display = 'none';
+      }
+    }
+
+    function switchRoutineTab(tab) {
+      if (tab === 'daily') {
+        document.getElementById('routineSubtabDaily').classList.add('active');
+        document.getElementById('routineSubtabReport').classList.remove('active');
+        document.getElementById('routineDailyView').style.display = 'block';
+        document.getElementById('routineReportView').style.display = 'none';
+      } else {
+        document.getElementById('routineSubtabReport').classList.add('active');
+        document.getElementById('routineSubtabDaily').classList.remove('active');
+        document.getElementById('routineReportView').style.display = 'block';
+        document.getElementById('routineDailyView').style.display = 'none';
+        loadRoutineMonthlyReport();
       }
     }
 
@@ -1087,7 +1149,6 @@
         let completedTasks = doc.exists ? (doc.data().completed || []) : [];
         currentRoutineTasksList = [...defaultRoutineItems];
 
-        // Also check if user added custom tasks in general
         db.collection("users").doc(currentUser.uid).collection("custom_routines").get().then((snap) => {
           snap.forEach(d => {
             if (!currentRoutineTasksList.includes(d.data().name)) {
@@ -1117,9 +1178,44 @@
       });
 
       db.collection("users").doc(currentUser.uid).collection("routine_logs").doc(selDate).set({
-        completed: completed
+        completed: completed,
+        points: completed.length
       }, { merge: true }).then(() => {
         alert("Routine progress saved successfully!");
+      });
+    }
+
+    function loadRoutineMonthlyReport() {
+      const monthStr = document.getElementById('routineReportMonth').value;
+      if (!currentUser || !monthStr) return;
+      
+      db.collection("users").doc(currentUser.uid).collection("routine_logs").get().then((snap) => {
+        const tbody = document.getElementById('routineReportTableRows');
+        tbody.innerHTML = '';
+        let totalPts = 0;
+        let rows = [];
+
+        snap.forEach(doc => {
+          const dateKey = doc.id; // YYYY-MM-DD
+          if (dateKey.startsWith(monthStr)) {
+            const data = doc.data();
+            const pts = data.points || (data.completed ? data.completed.length : 0);
+            totalPts += pts;
+            rows.push({ date: dateKey, tasks: (data.completed || []).join(', '), pts: pts });
+          }
+        });
+
+        rows.sort((a, b) => b.date.localeCompare(a.date));
+        if (rows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">No records found for this month.</td></tr>`;
+        } else {
+          rows.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${r.date}</td><td>${r.tasks || 'None'}</td><td><strong style="color:var(--income);">${r.pts} Pts</strong></td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('routineTotalPts').innerText = totalPts;
       });
     }
 
