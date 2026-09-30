@@ -163,14 +163,8 @@
 
     /* VEHICLE SUBTABS */
     .vehicle-subtab-group { display: flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius-full); gap: 4px; margin-bottom: 16px; }
-    .vehicle-subtab { flex: 1; border: none; padding: 8px; border-radius: var(--radius-full); font-size: 11.5px; font-weight: 700; background: transparent; color: var(--text-muted); cursor: pointer; text-align: center; }
+    .vehicle-subtab { flex: 1; border: none; padding: 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; background: transparent; color: var(--text-muted); cursor: pointer; text-align: center; }
     .vehicle-subtab.active { background: var(--vehicle); color: white; }
-
-    /* DISPLAY SETTINGS */
-    .display-settings-box { background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px; }
-    .display-check-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .display-check-item:not(:last-child) { border-bottom: 1px dashed #e2e8f0; }
-    .display-check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
 
     /* REMINDER CARDS */
     .reminder-card { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -278,16 +272,16 @@
     <div class="dashboard-overview">
       <div class="dash-row">
         <div class="metric-card">
-          <div class="metric-label" data-i18n="dash_inc">ഈ മാസത്തെ വരവ്</div>
+          <div class="metric-label">This Month Income</div>
           <div class="metric-value val-inc" id="dashInc">0.00</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label" data-i18n="dash_exp">ഈ മാസത്തെ ചെലവ്</div>
+          <div class="metric-label">This Month Expense</div>
           <div class="metric-value val-exp" id="dashExp">0.00</div>
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-label" data-i18n="dash_bal">ആകെ ബാക്കി തുക</div>
+        <div class="metric-label">Total Balance</div>
         <div class="metric-value val-bal" id="dashBal">0.00</div>
       </div>
     </div>
@@ -295,125 +289,112 @@
     <div class="app-content">
       <!-- HOME GRID MENU -->
       <div id="homeMenuView">
-        <div style="font-size: 13.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;" data-i18n="main_menu">പ്രധാന മെനു (Main Menu)</div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Main Menu</div>
         <div class="home-grid-menu">
           <div class="grid-menu-card" onclick="switchView('entry')">
             <i class="fa-solid fa-plus-circle"></i>
-            <span data-i18n="tab_add">ഇടപാട് ചേർക്കുക</span>
+            <span>New Entry</span>
           </div>
           <div class="grid-menu-card" onclick="switchView('report')">
             <i class="fa-solid fa-chart-pie"></i>
-            <span data-i18n="tab_report">റിപ്പോർട്ടുകൾ</span>
+            <span>Reports</span>
           </div>
           <div class="grid-menu-card" onclick="switchView('reminder')">
             <i class="fa-solid fa-bell"></i>
-            <span data-i18n="tab_reminders">ബിൽ റിമൈൻഡർ</span>
+            <span>Reminders</span>
           </div>
           <div class="grid-menu-card" onclick="switchView('vehicle')">
             <i class="fa-solid fa-gas-pump"></i>
-            <span data-i18n="tab_vehicle">വാഹന ട്രാക്കർ</span>
+            <span>Vehicle Tracker</span>
           </div>
         </div>
       </div>
 
       <!-- 1. ENTRY SECTION -->
       <div id="entrySection" style="display: none;">
-        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back">തിരികെ മെനുവിലേക്ക്</span></button>
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div class="type-pill-group">
-          <button type="button" class="type-pill active" data-mode="income" onclick="setMode('income')" data-i18n="type_inc">വരവ്</button>
-          <button type="button" class="type-pill" data-mode="expense" onclick="setMode('expense')" data-i18n="type_exp">ചെലവ്</button>
-          <button type="button" class="type-pill" data-mode="loan" onclick="setMode('loan')" data-i18n="type_loan">കടം ഇടപാട്</button>
+          <button type="button" class="type-pill active" data-mode="income" onclick="setMode('income')">Income</button>
+          <button type="button" class="type-pill" data-mode="expense" onclick="setMode('expense')">Expense</button>
+          <button type="button" class="type-pill" data-mode="loan" onclick="setMode('loan')">Loan / Debt</button>
         </div>
 
         <form id="ledgerForm" onsubmit="handleTransactionSubmit(event)">
-          <input type="hidden" id="entryType" value="വരവ്">
-
+          <input type="hidden" id="entryType" value="Income">
           <div class="form-group">
-            <label data-i18n="lbl_date">തീയതി</label>
+            <label>Date</label>
             <input type="date" id="entryDate" class="input-box" required>
           </div>
-
           <div class="form-group" id="loanGroupField" style="display: none;">
-            <label data-i18n="lbl_loan_type">കടം ഇടപാട് തരം</label>
+            <label>Loan Transaction Type</label>
             <div class="select-wrap">
               <select id="loanSubtype" class="input-box" onchange="updateEntryType()">
-                <option value="കടം വാങ്ങിയത്" data-i18n-opt="loan_borrowed">കടം വാങ്ങിയത്</option>
-                <option value="കടം കൊടുത്തത്" data-i18n-opt="loan_given">കടം കൊടുത്തത്</option>
-                <option value="കടം തിരിച്ചു കൊടുത്തത്" data-i18n-opt="loan_repaid">കടം തിരിച്ചു കൊടുത്തത്</option>
-                <option value="കടം തിരിച്ചു കിട്ടിയത്" data-i18n-opt="loan_received">കടം തിരിച്ചു കിട്ടിയത്</option>
+                <option value="Borrowed Loan">Borrowed Loan</option>
+                <option value="Given Loan">Given Loan</option>
+                <option value="Repaid Loan">Repaid Loan</option>
+                <option value="Received Loan Repayment">Received Loan Repayment</option>
               </select>
             </div>
           </div>
-
           <div class="form-group" id="personGroupField">
-            <label data-i18n="lbl_person">ആരുമായി? (വ്യക്തിയുടെ പേര്)</label>
-            <input type="text" id="entryPerson" class="input-box" placeholder="പേര് എഴുതുക...">
+            <label>Person Name</label>
+            <input type="text" id="entryPerson" class="input-box" placeholder="Enter name...">
           </div>
-
           <div class="form-group">
-            <label data-i18n="lbl_category">വിഭാഗം</label>
+            <label>Category</label>
             <div class="select-wrap">
               <select id="entryCategory" class="input-box" required></select>
             </div>
           </div>
-
           <div class="form-group">
-            <label data-i18n="lbl_amount">തുക</label>
+            <label>Amount</label>
             <div class="amount-calc-wrap">
               <input type="number" id="entryAmount" step="0.01" class="input-box" placeholder="0.00" required>
               <button type="button" class="btn-calc" onclick="openCalc('entryAmount')"><i class="fa-solid fa-calculator"></i></button>
             </div>
           </div>
-
           <div class="form-group">
-            <label data-i18n="lbl_description">വിവരണം</label>
-            <input type="text" id="entryDesc" class="input-box" placeholder="വിവരങ്ങൾ എഴുതുക...">
+            <label>Description / Breakdown</label>
+            <input type="text" id="entryDesc" class="input-box" placeholder="Enter details...">
           </div>
-
           <div class="form-actions-group">
-            <button type="button" class="btn-cancel-action" onclick="resetEntryForm()">
-              <i class="fa-solid fa-rotate-left"></i> <span data-i18n="btn_cancel_entry">റദ്ദാക്കുക</span>
-            </button>
-            <button type="submit" class="btn-main btn-save-action" id="saveSubmitBtn">
-              <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_save">രേഖപ്പെടുത്തുക</span>
-            </button>
+            <button type="button" class="btn-cancel-action" onclick="resetEntryForm()"><i class="fa-solid fa-rotate-left"></i> Cancel</button>
+            <button type="submit" class="btn-main btn-save-action" id="saveSubmitBtn"><i class="fa-solid fa-paper-plane"></i> Save Entry</button>
           </div>
         </form>
       </div>
 
       <!-- 2. REPORT SECTION -->
       <div id="reportSection" style="display: none;">
-        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back">തിരികെ മെനുവിലേക്ക്</span></button>
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div id="printableReportArea">
           <div class="filter-grid">
             <div class="select-wrap">
               <select id="filterMonth" class="input-box" onchange="renderReport()">
-                <option value="THIS_MONTH" selected data-i18n-opt="opt_this_month">ഈ മാസം</option>
-                <option value="ALL" data-i18n-opt="opt_all_months">എല്ലാ മാസവും</option>
+                <option value="THIS_MONTH" selected>This Month</option>
+                <option value="ALL">All Months</option>
               </select>
             </div>
             <div class="select-wrap">
               <select id="filterType" class="input-box" onchange="renderReport()">
-                <option value="ALL" data-i18n-opt="opt_all_types">എല്ലാ ഇടപാടുകളും</option>
-                <option value="INCOME" data-i18n-opt="opt_inc_only">വരവ് മാത്രം</option>
-                <option value="EXPENSE" data-i18n-opt="opt_exp_only">ചെലവ് മാത്രം</option>
-                <option value="LOAN" data-i18n-opt="opt_loan_only">കടം ഇടപാടുകൾ</option>
+                <option value="ALL">All Transactions</option>
+                <option value="INCOME">Income Only</option>
+                <option value="EXPENSE">Expense Only</option>
+                <option value="LOAN">Loans / Debts</option>
               </select>
             </div>
           </div>
-
           <div class="filter-summary-box">
-            <span style="color: var(--income);"><span data-i18n="sum_inc">വരവ്</span>: <strong id="repIncSum">0.00</strong></span>
-            <span style="color: var(--expense);"><span data-i18n="sum_exp">ചെലവ്</span>: <strong id="repExpSum">0.00</strong></span>
+            <span style="color: var(--income);">Income: <strong id="repIncSum">0.00</strong></span>
+            <span style="color: var(--expense);">Expense: <strong id="repExpSum">0.00</strong></span>
           </div>
-
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th data-i18n="th_date">തീയതി</th>
-                  <th data-i18n="th_details">വിവരണം</th>
-                  <th data-i18n="th_amount">തുക</th>
+                  <th>Date</th>
+                  <th>Details</th>
+                  <th>Amount</th>
                   <th style="text-align: right;" class="action-icons">Action</th>
                 </tr>
               </thead>
@@ -425,83 +406,77 @@
 
       <!-- 3. REMINDER SECTION -->
       <div id="reminderSection" style="display: none;">
-        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back">തിരികെ മെനുവിലേക്ക്</span></button>
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 15px; font-weight: 700;" data-i18n="title_upcoming_bills">വരാനിരിക്കുന്ന ബില്ലുകൾ & റിമൈൻഡറുകൾ</h3>
+          <h3 style="font-size: 15px; font-weight: 700;">Upcoming Bills & Reminders</h3>
           <button type="button" class="btn-main" style="width: auto; padding: 6px 14px; background: var(--reminder); font-size: 13px;" onclick="openAddReminderModal()">
-            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_reminder">പുതിയ റിമൈൻഡർ</span>
+            <i class="fa-solid fa-plus"></i> New Reminder
           </button>
         </div>
-
         <div id="remindersListContainer">
-          <p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;" data-i18n="no_reminders">റിമൈൻഡറുകൾ ഒന്നും ചേർത്തിട്ടില്ല</p>
+          <p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No active reminders</p>
         </div>
       </div>
 
-      <!-- 4. VEHICLE SECTION WITH OIL CHANGE & SERVICE -->
+      <!-- 4. VEHICLE SECTION -->
       <div id="vehicleSection" style="display: none;">
-        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn_back">തിരികെ മെനുവിലേക്ക്</span></button>
+        <button type="button" class="btn-cancel-action" style="margin-bottom: 16px;" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
           <div class="select-wrap" style="flex: 1;">
             <select id="activeVehicleSelect" class="input-box" onchange="onVehicleSelectChange()"></select>
           </div>
-          <button type="button" id="btnDeleteCurrentVeh" class="btn-main" style="width: auto; padding: 0 12px; background: var(--expense);" onclick="promptDeleteCurrentVehicle()" title="Delete Vehicle">
+          <button type="button" class="btn-main" style="width: auto; padding: 0 12px; background: var(--expense);" onclick="promptDeleteCurrentVehicle()" title="Delete Vehicle">
             <i class="fa-solid fa-trash-can"></i>
           </button>
           <button type="button" class="btn-main" style="width: auto; padding: 0 14px; background: var(--vehicle);" onclick="openAddVehicleModal()">
-            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_veh">വാഹനം</span>
+            <i class="fa-solid fa-plus"></i> Vehicle
           </button>
         </div>
 
         <!-- Vehicle Subtabs -->
         <div class="vehicle-subtab-group">
-          <button type="button" class="vehicle-subtab active" id="subtabFuelBtn" onclick="switchVehicleSubtab('fuel')">⛽ ഇന്ധനം (Fuel)</button>
-          <button type="button" class="vehicle-subtab" id="subtabServiceBtn" onclick="switchVehicleSubtab('service')">🛢️ ഓയിൽ & സർവീസ് (Oil & Service)</button>
+          <button type="button" class="vehicle-subtab active" id="subtabFuelBtn" onclick="switchVehicleSubtab('fuel')">⛽ Fuel Log</button>
+          <button type="button" class="vehicle-subtab" id="subtabServiceBtn" onclick="switchVehicleSubtab('service')">🛢️ Service & Pollution</button>
         </div>
 
         <!-- 4A. FUEL LOG FORM -->
         <div id="vehicleFuelFormView">
           <form id="fuelLogForm" onsubmit="handleFuelEntrySubmit(event)">
             <div class="form-group">
-              <label data-i18n="lbl_date">തീയതി</label>
+              <label>Date</label>
               <input type="date" id="fuelDate" class="input-box" required>
             </div>
             <div class="form-group">
-              <label data-i18n="lbl_odo_reading">ഇപ്പോഴത്തെ മീറ്റർ റീഡിംഗ് (Odometer Km)</label>
+              <label>Current Odometer (Km)</label>
               <input type="number" id="fuelOdo" class="input-box" placeholder="45200" required>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <div class="form-group">
-                <label data-i18n="lbl_fuel_price">ഇന്ധന വില (Price/Litre)</label>
+                <label>Fuel Price / Litre</label>
                 <input type="number" step="0.01" id="fuelPricePerLiter" class="input-box" placeholder="105.50" required>
               </div>
               <div class="form-group">
-                <label data-i18n="lbl_amount">അടിച്ച ആകെ തുക</label>
+                <label>Total Amount</label>
                 <div class="amount-calc-wrap">
                   <input type="number" step="0.01" id="fuelTotalAmount" class="input-box" placeholder="2000" required>
                   <button type="button" class="btn-calc" onclick="openCalc('fuelTotalAmount')"><i class="fa-solid fa-calculator"></i></button>
                 </div>
               </div>
             </div>
-            
             <div class="form-actions-group">
-              <button type="button" class="btn-cancel-action" onclick="resetFuelForm()">
-                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="btn_cancel_entry">റദ്ദാക്കുക</span>
-              </button>
-              <button type="submit" class="btn-main btn-save-action" style="background: var(--vehicle);" id="saveFuelSubmitBtn">
-                <i class="fa-solid fa-gas-pump"></i> <span data-i18n="btn_save_fuel">ഇന്ധന വിവരങ്ങൾ സേവ് ചെയ്യുക</span>
-              </button>
+              <button type="button" class="btn-cancel-action" onclick="resetFuelForm()">Cancel</button>
+              <button type="submit" class="btn-main btn-save-action" style="background: var(--vehicle);">Save Fuel Log</button>
             </div>
           </form>
-
-          <h4 style="margin: 20px 0 10px 0; font-size: 14px;" data-i18n="title_fuel_history">ഇന്ധന ചരിത്രം (Fuel History)</h4>
+          
+          <h4 style="margin: 20px 0 10px 0; font-size: 14px;">Fuel History</h4>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th data-i18n="th_date">തീയതി</th>
+                  <th>Date</th>
                   <th>Km</th>
-                  <th data-i18n="th_amount">തുക</th>
+                  <th>Amount</th>
                   <th style="text-align: right;">Action</th>
                 </tr>
               </thead>
@@ -510,55 +485,56 @@
           </div>
         </div>
 
-        <!-- 4B. OIL CHANGE & SERVICE LOG FORM -->
+        <!-- 4B. SERVICE & POLLUTION LOG FORM -->
         <div id="vehicleServiceFormView" style="display: none;">
           <form id="serviceLogForm" onsubmit="handleServiceEntrySubmit(event)">
             <div class="form-group">
-              <label>തീയതി</label>
+              <label>Date</label>
               <input type="date" id="serviceDate" class="input-box" required>
             </div>
             <div class="form-group">
-              <label>സർവീസ് തരം (Service Type)</label>
+              <label>Service / Maintenance Type</label>
               <div class="select-wrap">
                 <select id="serviceTypeSelect" class="input-box">
-                  <option value="ഓയിൽ ചേഞ്ച് (Oil Change)">🛢️ ഓയിൽ ചേഞ്ച് (Oil Change)</option>
-                  <option value="ജനറൽ സർവീസ് (General Service)">🔧 ജനറൽ സർവീസ് (General Service)</option>
-                  <option value="ടയർ മാറ്റം (Tyre Change)">🔘 ടയർ മാറ്റം (Tyre Change)</option>
-                  <option value="ബ്രേക്ക് വർക്ക് (Brake Work)">🛑 ബ്രേക്ക് വർക്ക് (Brake Work)</option>
-                  <option value="ഇൻഷുറൻസ് / ടാക്സ് (Insurance / Tax)">📄 ഇൻഷുറൻസ് / ടാക്സ്</option>
-                  <option value="മറ്റു പണികൾ (Other Repairs)">🛠️ മറ്റു പണികൾ (Other Repairs)</option>
+                  <option value="Oil Change">🛢️ Oil Change</option>
+                  <option value="General Service">🔧 General Service</option>
+                  <option value="Tyre Change">🔘 Tyre Change</option>
+                  <option value="Brake Work">🛑 Brake Work</option>
+                  <option value="Pollution Check">🍃 Pollution Check</option>
+                  <option value="Insurance / Tax">📄 Insurance / Tax</option>
+                  <option value="Other Repairs">🛠️ Other Repairs</option>
                 </select>
               </div>
             </div>
             <div class="form-group">
-              <label>മീറ്റർ റീഡിംഗ് (Odometer Km)</label>
+              <label>Odometer (Km)</label>
               <input type="number" id="serviceOdo" class="input-box" placeholder="45200" required>
             </div>
             <div class="form-group">
-              <label>ചെലവായ ആകെ തുക</label>
+              <label>Total Amount</label>
               <div class="amount-calc-wrap">
                 <input type="number" step="0.01" id="serviceTotalAmount" class="input-box" placeholder="1500" required>
                 <button type="button" class="btn-calc" onclick="openCalc('serviceTotalAmount')"><i class="fa-solid fa-calculator"></i></button>
               </div>
             </div>
             <div class="form-group">
-              <label>കുറിപ്പുകൾ / വിവരങ്ങൾ (Notes)</label>
-              <input type="text" id="serviceNotes" class="input-box" placeholder="ഉദാ: Castrol Engine Oil changed...">
+              <label>Notes / Details</label>
+              <input type="text" id="serviceNotes" class="input-box" placeholder="e.g. Castrol Engine Oil changed...">
             </div>
             <div class="form-actions-group">
-              <button type="button" class="btn-cancel-action" onclick="resetServiceForm()">റദ്ദാക്കുക</button>
-              <button type="submit" class="btn-main btn-save-action" style="background: var(--vehicle);">സർവീസ് വിവരം സേവ് ചെയ്യുക</button>
+              <button type="button" class="btn-cancel-action" onclick="resetServiceForm()">Cancel</button>
+              <button type="submit" class="btn-main btn-save-action" style="background: var(--vehicle);">Save Service Log</button>
             </div>
           </form>
 
-          <h4 style="margin: 20px 0 10px 0; font-size: 14px;">സർവീസ് & ഓയിൽ ചരിത്രം (Service History)</h4>
+          <h4 style="margin: 20px 0 10px 0; font-size: 14px;">Service & Pollution History</h4>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>തീയതി</th>
-                  <th>തരം & വിവരണം</th>
-                  <th>Km / തുക</th>
+                  <th>Date</th>
+                  <th>Type & Notes</th>
+                  <th>Km / Amount</th>
                   <th style="text-align: right;">Action</th>
                 </tr>
               </thead>
@@ -576,28 +552,28 @@
   <div class="modal-overlay" id="addVehicleModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 data-i18n="title_add_veh">പുതിയ വാഹനം ചേർക്കുക</h3>
+        <h3>Add New Vehicle</h3>
         <button type="button" class="modal-close-btn" onclick="closeAddVehicleModal()">✕</button>
       </div>
       <form onsubmit="handleNewVehicleSubmit(event)">
         <div class="form-group">
-          <label data-i18n="lbl_veh_type">വാഹന തരം</label>
+          <label>Vehicle Type</label>
           <div class="select-wrap">
             <select id="newVehType" class="input-box">
-              <option value="Car">കാർ (Car)</option>
-              <option value="Bike">ബൈക്ക് / സ്കൂട്ടർ (Bike)</option>
+              <option value="Car">Car</option>
+              <option value="Bike">Bike / Scooter</option>
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label data-i18n="lbl_veh_name">വാഹനത്തിന്റെ പേര് / മോഡൽ</label>
+          <label>Vehicle Name / Model</label>
           <input type="text" id="newVehName" class="input-box" placeholder="Swift / Activa" required>
         </div>
         <div class="form-group">
-          <label data-i18n="lbl_veh_num">വാഹന നമ്പർ (Reg. Number)</label>
+          <label>Registration Number</label>
           <input type="text" id="newVehNumber" class="input-box" placeholder="KL 10 AW 1234">
         </div>
-        <button type="submit" class="btn-main" style="background: var(--vehicle);" data-i18n="btn_save_veh">വാഹനം സേവ് ചെയ്യുക</button>
+        <button type="submit" class="btn-main" style="background: var(--vehicle);">Save Vehicle</button>
       </form>
     </div>
   </div>
@@ -606,31 +582,31 @@
   <div class="modal-overlay" id="addReminderModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 data-i18n="btn_add_reminder">പുതിയ റിമൈൻഡർ ചേർക്കുക</h3>
+        <h3>Add New Reminder</h3>
         <button type="button" class="modal-close-btn" onclick="closeAddReminderModal()">✕</button>
       </div>
       <form onsubmit="handleNewReminderSubmit(event)">
         <div class="form-group">
-          <label data-i18n="lbl_bill_name">ബിൽ / ഇടപാടിന്റെ പേര്</label>
-          <input type="text" id="remindTitle" class="input-box" placeholder="ഉദാ: വീട്ടുവാടക, കറന്റ് ബിൽ" required>
+          <label>Bill / Item Name</label>
+          <input type="text" id="remindTitle" class="input-box" placeholder="e.g. House Rent, Electricity Bill" required>
         </div>
         <div class="form-group">
-          <label data-i18n="lbl_category">വിഭാഗം (Category)</label>
+          <label>Category</label>
           <div class="select-wrap">
             <select id="remindCategory" class="input-box" required></select>
           </div>
         </div>
         <div class="form-group">
-          <label data-i18n="lbl_due_date">നൽകേണ്ട തീയതി (Due Date)</label>
+          <label>Due Date</label>
           <input type="date" id="remindDueDate" class="input-box" required>
         </div>
         <div class="form-group">
-          <label data-i18n="lbl_amount">തുക (Amount)</label>
+          <label>Amount</label>
           <input type="number" step="0.01" id="remindAmount" class="input-box" placeholder="0.00" required>
         </div>
         <div class="form-actions-group">
-          <button type="button" class="btn-cancel-action" onclick="closeAddReminderModal()" data-i18n="btn_cancel">റദ്ദാക്കുക</button>
-          <button type="submit" class="btn-main btn-save-action" style="background: var(--reminder);" data-i18n="btn_save_reminder">റിമൈൻഡർ സേവ് ചെയ്യുക</button>
+          <button type="button" class="btn-cancel-action" onclick="closeAddReminderModal()">Cancel</button>
+          <button type="submit" class="btn-main btn-save-action" style="background: var(--reminder);">Save Reminder</button>
         </div>
       </form>
     </div>
@@ -667,11 +643,11 @@
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 data-i18n="settings_title"><i class="fa-solid fa-gear" style="margin-right: 8px;"></i>Settings</h3>
+        <h3>Settings</h3>
         <button type="button" class="modal-close-btn" onclick="closeSettingsModal()">✕</button>
       </div>
       <div class="form-group">
-        <label data-i18n="lbl_settings_currency">കറൻസി (Currency)</label>
+        <label>Currency</label>
         <div class="select-wrap">
           <select id="settingsCurrencySelect" class="input-box">
             <option value="₹">₹ - Indian Rupee (INR)</option>
@@ -682,7 +658,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label data-i18n="lbl_settings_name">പ്രൊഫൈൽ പേര്</label>
+        <label>Profile Name</label>
         <input type="text" id="settingsDisplayName" class="input-box" placeholder="Your Name">
       </div>
       <button type="button" class="btn-main" style="margin-top: 10px;" onclick="handleSettingsSaveClick()">Save Settings</button>
@@ -690,12 +666,6 @@
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
-    }
-
     const firebaseConfig = {
       apiKey: "AIzaSyAke_55q75eiJSnzmZMMaiB0QGe8lHnlWU",
       authDomain: "ledgers-new.firebaseapp.com",
@@ -711,14 +681,14 @@
     const db = firebase.firestore();
 
     let currentUser = null, isSignUp = false;
-    let lang = localStorage.getItem('app_lang') || 'ml';
     let userCurrency = localStorage.getItem('app_currency') || '₹';
     let rawData = [], userVehicles = [], userReminders = [], activeVehicleId = null;
     let calcTargetInputId = 'entryAmount';
     let unsubSnapshot = null, unsubVehicles = null, unsubFuelHistory = null, unsubServiceHistory = null, unsubReminders = null;
 
     const defaultCategories = {
-      ml: { income: ["ശമ്പളം / വരുമാനം", "ബിസിനസ്സ്", "മറ്റുള്ളവ"], expense: ["പലചരക്ക് / ഭക്ഷണം", "യാത്ര / ഇന്ധനം", "വീട്ടുചെലവുകൾ", "മറ്റുള്ളവ"], loan: ["കടം ഇടപാടുകൾ"] }
+      income: ["Salary", "Business", "Others"],
+      expense: ["Food & Groceries", "Travel & Fuel", "House Expenses", "Others"]
     };
 
     const todayFormatted = new Date().toISOString().split('T')[0];
@@ -742,11 +712,6 @@
         bindUserVehicles(user.uid);
       } else {
         currentUser = null;
-        if (unsubSnapshot) unsubSnapshot();
-        if (unsubVehicles) unsubVehicles();
-        if (unsubFuelHistory) unsubFuelHistory();
-        if (unsubServiceHistory) unsubServiceHistory();
-        if (unsubReminders) unsubReminders();
         document.getElementById('mainAppView').style.display = 'none';
         document.getElementById('authView').style.display = 'block';
       }
@@ -802,11 +767,11 @@
       document.querySelector(`[data-mode="${m}"]`).classList.add('active');
       document.getElementById('loanGroupField').style.display = (m === 'loan') ? 'block' : 'none';
       document.getElementById('personGroupField').style.display = (m === 'loan') ? 'block' : 'none';
-      document.getElementById('entryType').value = (m === 'expense') ? 'ചെലവ്' : (m === 'income' ? 'വരവ്' : 'കടം');
+      document.getElementById('entryType').value = (m === 'expense') ? 'Expense' : (m === 'income' ? 'Income' : 'Loan');
       
       const select = document.getElementById('entryCategory');
       select.innerHTML = '';
-      const cats = defaultCategories.ml[m === 'loan' ? 'expense' : m] || [];
+      const cats = defaultCategories[m === 'loan' ? 'expense' : m] || [];
       cats.forEach(c => select.appendChild(new Option(c, c)));
     }
 
@@ -838,7 +803,7 @@
           const data = doc.data(); const amt = parseFloat(data.amount) || 0;
           let rowDate = new Date();
           if (data.date) { const p = data.date.split('-'); if (p.length === 3) rowDate = new Date(p[0], p[1] - 1, p[2]); }
-          const isInc = (data.type.includes("വരവ്") || data.type.includes("Income") || data.type.includes("Borrowed"));
+          const isInc = (data.type.includes("Income") || data.type.includes("Borrowed") || data.type.includes("Received") || data.type.includes("വരവ്"));
           if (isInc) tInc += amt; else tExp += amt;
           if (rowDate.getMonth() === currM && rowDate.getFullYear() === currY) { if (isInc) mInc += amt; else mExp += amt; }
           rawData.push({ id: doc.id, ...data, parsedDate: rowDate });
@@ -857,9 +822,9 @@
       const now = new Date(), currM = now.getMonth(), currY = now.getFullYear();
       let list = rawData.filter(i => {
         if (mFilter === "THIS_MONTH" && (i.parsedDate.getMonth() !== currM || i.parsedDate.getFullYear() !== currY)) return false;
-        if (tFilter === "INCOME") return i.type.includes("വരവ്") || i.type.includes("Income");
-        if (tFilter === "EXPENSE") return i.type.includes("ചെലവ്") || i.type.includes("Expense");
-        if (tFilter === "LOAN") return i.type.includes("കടം") || i.type.includes("Loan");
+        if (tFilter === "INCOME") return i.type.includes("Income") || i.type.includes("Borrowed");
+        if (tFilter === "EXPENSE") return i.type.includes("Expense") || i.type.includes("ചെലവ്");
+        if (tFilter === "LOAN") return i.type.includes("Loan") || i.type.includes("കടം");
         return true;
       });
       list.sort((a, b) => b.parsedDate - a.parsedDate);
@@ -868,7 +833,7 @@
       else {
         list.forEach(r => {
           const amt = parseFloat(r.amount) || 0;
-          const isInc = r.type.includes("വരവ്") || r.type.includes("Income") || r.type.includes("Borrowed");
+          const isInc = r.type.includes("Income") || r.type.includes("Borrowed") || r.type.includes("Received") || r.type.includes("വരവ്");
           if (isInc) sumI += amt; else sumE += amt;
           const dtStr = `${String(r.parsedDate.getDate()).padStart(2, '0')}-${String(r.parsedDate.getMonth() + 1).padStart(2, '0')}-${r.parsedDate.getFullYear()}`;
           const tr = document.createElement('tr');
@@ -891,7 +856,12 @@
     }
 
     /* REMINDERS */
-    function openAddReminderModal() { document.getElementById('addReminderModal').style.display = 'flex'; }
+    function openAddReminderModal() {
+      const select = document.getElementById('remindCategory');
+      select.innerHTML = '';
+      defaultCategories.expense.forEach(c => select.appendChild(new Option(c, c)));
+      document.getElementById('addReminderModal').style.display = 'flex';
+    }
     function closeAddReminderModal() { document.getElementById('addReminderModal').style.display = 'none'; }
     function handleNewReminderSubmit(e) {
       e.preventDefault();
@@ -905,7 +875,7 @@
       unsubReminders = db.collection("users").doc(uid).collection("reminders").orderBy("dueDate", "asc").onSnapshot((snap) => {
         userReminders = []; snap.forEach(doc => userReminders.push({ id: doc.id, ...doc.data() }));
         const container = document.getElementById('remindersListContainer'); container.innerHTML = '';
-        if (userReminders.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted);">No reminders</p>`; return; }
+        if (userReminders.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted);">No active reminders</p>`; return; }
         userReminders.forEach(rem => {
           const card = document.createElement('div'); card.className = 'reminder-card';
           card.innerHTML = `<div><div class="reminder-title">${rem.title}</div><div class="reminder-date">Due: ${rem.dueDate}</div><button class="btn-pay-now" onclick="markReminderPaid('${rem.id}')">Paid</button></div><div class="reminder-amt">${userCurrency}${rem.amount}</div>`;
@@ -916,12 +886,12 @@
     function markReminderPaid(id) {
       const rem = userReminders.find(r => r.id === id); if(!rem) return;
       db.collection("users").doc(currentUser.uid).collection("transactions").add({
-        date: todayFormatted, type: 'ചെലവ്', category: 'വീട്ടുചെലവുകൾ', amount: rem.amount, description: `${rem.title} (Bill Paid)`
+        date: todayFormatted, type: 'Expense', category: rem.category || 'House Expenses', amount: rem.amount, description: `${rem.title} (Bill Paid)`
       });
       db.collection("users").doc(currentUser.uid).collection("reminders").doc(id).delete();
     }
 
-    /* VEHICLES & OIL CHANGE / SERVICE */
+    /* VEHICLES & SERVICE / POLLUTION */
     function openAddVehicleModal() { document.getElementById('addVehicleModal').style.display = 'flex'; }
     function closeAddVehicleModal() { document.getElementById('addVehicleModal').style.display = 'none'; }
     function handleNewVehicleSubmit(e) {
@@ -960,7 +930,7 @@
         date: document.getElementById('fuelDate').value, odometer: odo, amount: amt
       }).then(() => {
         db.collection("users").doc(currentUser.uid).collection("transactions").add({
-          date: document.getElementById('fuelDate').value, type: 'ചെലവ്', category: 'യാത്ര / ഇന്ധനം', amount: amt, description: `Fuel Filling (${odo} Km)`
+          date: document.getElementById('fuelDate').value, type: 'Expense', category: 'Travel & Fuel', amount: amt, description: `Fuel Filling (${odo} Km)`
         });
         resetFuelForm(); alert("Fuel log saved!");
       });
@@ -980,7 +950,7 @@
     }
     function deleteFuelLog(id) { db.collection("users").doc(currentUser.uid).collection("vehicles").doc(activeVehicleId).collection("fuel_logs").doc(id).delete(); }
 
-    /* Oil Change & Service Logging */
+    /* Service & Pollution Logging */
     function handleServiceEntrySubmit(e) {
       e.preventDefault();
       if (!activeVehicleId) { alert("Select vehicle first!"); return; }
@@ -992,7 +962,7 @@
         date: document.getElementById('serviceDate').value, serviceType: sType, odometer: odo, amount: amt, notes: notes
       }).then(() => {
         db.collection("users").doc(currentUser.uid).collection("transactions").add({
-          date: document.getElementById('serviceDate').value, type: 'ചെലവ്', category: 'യാത്ര / ഇന്ധനം', amount: amt, description: `${sType} - ${notes} (${odo} Km)`
+          date: document.getElementById('serviceDate').value, type: 'Expense', category: 'Travel & Fuel', amount: amt, description: `${sType} - ${notes} (${odo} Km)`
         });
         resetServiceForm(); alert("Service log saved!");
       });
