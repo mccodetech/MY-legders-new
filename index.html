@@ -680,23 +680,38 @@
 
   <!-- SPECIAL DAY REPORT VIEW MODAL -->
   <div class="modal-overlay" id="specialReportModal">
-    <div class="modal-dialog" style="max-width: 500px;">
+    <div class="modal-dialog" style="max-width: 540px;">
       <div class="modal-header">
         <h3 id="specialReportTitle">Event Report</h3>
         <button type="button" class="modal-close-btn" onclick="closeSpecialReportModal()">✕</button>
       </div>
+
+      <!-- Filter by Specific Event or Keyword -->
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label style="font-size: 11px; margin-bottom: 4px;">Filter / Select Specific Event</label>
+        <div class="select-wrap">
+          <select id="specialEventFilterSelect" class="input-box" onchange="filterSpecialDayReportBySelection()">
+            <option value="ALL">All Events in this Range</option>
+          </select>
+        </div>
+      </div>
+
       <div id="printableSpecialArea">
         <div style="margin-bottom: 12px; font-size: 13px; color: var(--text-muted);" id="specialReportDates"></div>
-        <div class="filter-summary-box" style="margin-bottom: 12px;">
-          <span style="color: var(--income);">Income: <strong id="specRepInc">0.00</strong></span>
-          <span style="color: var(--expense);">Expense: <strong id="specRepExp">0.00</strong></span>
+        
+        <!-- Summary Box with Counts & Totals -->
+        <div class="filter-summary-box" style="margin-bottom: 12px; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 4px;">
+          <div><small style="display:block; font-size:10px; color:var(--text-muted);">Total Entries</small><strong id="specRepCount">0</strong></div>
+          <div><small style="display:block; font-size:10px; color:var(--income);">Income</small><strong id="specRepInc" style="color: var(--income);">0.00</strong></div>
+          <div><small style="display:block; font-size:10px; color:var(--expense);">Expense</small><strong id="specRepExp" style="color: var(--expense);">0.00</strong></div>
         </div>
+
         <div class="table-responsive">
           <table>
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Details</th>
+                <th>Event / Details</th>
                 <th>Amount</th>
               </tr>
             </thead>
@@ -704,7 +719,8 @@
           </table>
         </div>
       </div>
-      <div style="margin-top: 16px;">
+
+      <div style="margin-top: 16px; display: flex; gap: 10px;">
         <button type="button" class="btn-main" style="background: #475569;" onclick="window.print()"><i class="fa-solid fa-file-pdf" style="margin-right: 6px;"></i> Export PDF</button>
       </div>
     </div>
@@ -948,20 +964,6 @@
       if (view === 'specialDays') bindUserSpecialDays(currentUser.uid);
     }
 
-    function switchReportTab(tab) {
-      if (tab === 'regular') {
-        document.getElementById('repSubtabReg').classList.add('active');
-        document.getElementById('repSubtabSpecial').classList.remove('active');
-        document.getElementById('regularReportView').style.display = 'block';
-        document.getElementById('specialReportView').style.display = 'none';
-      } else {
-        document.getElementById('repSubtabSpecial').classList.add('active');
-        document.getElementById('repSubtabReg').classList.remove('active');
-        document.getElementById('specialReportView').style.display = 'block';
-        document.getElementById('regularReportView').style.display = 'none';
-      }
-    }
-
     function switchRoutineTab(tab) {
       if (tab === 'daily') {
         document.getElementById('routineSubtabDaily').classList.add('active');
@@ -1087,7 +1089,7 @@
       }).then(() => { resetEntryForm(); switchView('home'); });
     }
 
-    /* SPECIAL DAYS */
+    /* SPECIAL DAYS & REPORTS */
     function openAddSpecialDayModal() { document.getElementById('addSpecialDayModal').style.display = 'flex'; }
     function closeAddSpecialDayModal() { document.getElementById('addSpecialDayModal').style.display = 'none'; }
     function handleNewSpecialDaySubmit(e) {
@@ -1113,12 +1115,46 @@
     }
     function deleteSpecialDay(id) { db.collection("users").doc(currentUser.uid).collection("special_days").doc(id).delete(); }
 
+    let currentSelectedSpecialEventId = null;
+
     function viewSpecialDayReport(id) {
-      const ev = userSpecialDays.find(e => e.id === id); if (!ev) return;
+      const ev = userSpecialDays.find(e => e.id === id); 
+      if (!ev) return;
+      currentSelectedSpecialEventId = id;
       window.activeSpecialDayId = id;
+
       document.getElementById('specialReportTitle').innerText = ev.title;
       document.getElementById('specialReportDates').innerText = `Duration: ${ev.startDate} to ${ev.endDate}`;
-      
+
+      const filterSelect = document.getElementById('specialEventFilterSelect');
+      filterSelect.innerHTML = `<option value="ALL">Entire Event (${ev.title})</option>`;
+      userSpecialDays.forEach(item => {
+        if (item.id !== ev.id) {
+          filterSelect.appendChild(new Option(item.title, item.id));
+        }
+      });
+      filterSelect.value = "ALL";
+
+      renderSpecialReportData(ev);
+      document.getElementById('specialReportModal').style.display = 'flex';
+    }
+
+    function filterSpecialDayReportBySelection() {
+      const selectedId = document.getElementById('specialEventFilterSelect').value;
+      let ev;
+      if (selectedId === "ALL") {
+        ev = userSpecialDays.find(e => e.id === currentSelectedSpecialEventId);
+      } else {
+        ev = userSpecialDays.find(e => e.id === selectedId);
+      }
+      if (ev) {
+        document.getElementById('specialReportTitle').innerText = ev.title;
+        document.getElementById('specialReportDates').innerText = `Duration: ${ev.startDate} to ${ev.endDate}`;
+        renderSpecialReportData(ev);
+      }
+    }
+
+    function renderSpecialReportData(ev) {
       let startD = new Date(ev.startDate);
       let endD = new Date(ev.endDate);
       startD.setHours(0, 0, 0, 0);
@@ -1127,25 +1163,33 @@
       let specList = rawData.filter(i => i.parsedDate >= startD && i.parsedDate <= endD);
       specList.sort((a, b) => b.parsedDate - a.parsedDate);
 
-      let sInc = 0, sExp = 0; const tbody = document.getElementById('specialReportTableRows'); tbody.innerHTML = '';
-      if (specList.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">No records found in this duration.</td></tr>`; }
-      else {
+      let sInc = 0, sExp = 0; 
+      const tbody = document.getElementById('specialReportTableRows'); 
+      tbody.innerHTML = '';
+
+      if (specList.length === 0) { 
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">No records found in this duration.</td></tr>`; 
+      } else {
         specList.forEach(r => {
           const amt = parseFloat(r.amount) || 0;
           const isInc = r.type.includes("Income") || r.type.includes("Borrowed") || r.type.includes("Received");
           if (isInc) sInc += amt; else sExp += amt;
+          
           const dtStr = `${String(r.parsedDate.getDate()).padStart(2, '0')}-${String(r.parsedDate.getMonth() + 1).padStart(2, '0')}-${r.parsedDate.getFullYear()}`;
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${dtStr}</td><td><strong>${r.category}</strong><br><small>${r.description || ''}</small></td><td class="badge-amt" style="color:${isInc ? 'var(--income)' : 'var(--expense)'};">${isInc ? '+' : '-'}${userCurrency}${amt.toFixed(2)}</td>`;
+          tr.innerHTML = `<td>${dtStr}</td><td><strong>${r.category}</strong><br><small>${r.description || ''} (${r.type})</small></td><td class="badge-amt" style="color:${isInc ? 'var(--income)' : 'var(--expense)'};">${isInc ? '+' : '-'}${userCurrency}${amt.toFixed(2)}</td>`;
           tbody.appendChild(tr);
         });
       }
+
+      document.getElementById('specRepCount').innerText = specList.length;
       document.getElementById('specRepInc').innerText = userCurrency + sInc.toFixed(2);
       document.getElementById('specRepExp').innerText = userCurrency + sExp.toFixed(2);
-      document.getElementById('specialReportModal').style.display = 'flex';
     }
+
     function closeSpecialReportModal() { 
       window.activeSpecialDayId = null;
+      currentSelectedSpecialEventId = null;
       document.getElementById('specialReportModal').style.display = 'none'; 
     }
 
@@ -1210,7 +1254,7 @@
         let rows = [];
 
         snap.forEach(doc => {
-          const dateKey = doc.id; // YYYY-MM-DD
+          const dateKey = doc.id;
           if (dateKey.startsWith(monthStr)) {
             const data = doc.data();
             const pts = data.points || (data.completed ? data.completed.length : 0);
