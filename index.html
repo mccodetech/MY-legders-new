@@ -886,6 +886,7 @@
     let userCurrency = localStorage.getItem('app_currency') || '₹';
     let rawData = [], userVehicles = [], userReminders = [], userSpecialDays = [], activeVehicleId = null;
     let calcTargetInputId = 'entryAmount';
+    let editingTxId = null; // Track editing state
     let unsubSnapshot = null, unsubVehicles = null, unsubFuelHistory = null, unsubServiceHistory = null, unsubReminders = null, unsubSpecialDays = null, unsubRoutines = null;
 
     const defaultCategories = {
@@ -1062,7 +1063,13 @@
     }
 
     function updateEntryType() { document.getElementById('entryType').value = document.getElementById('loanSubtype').value; }
-    function resetEntryForm() { document.getElementById('entryAmount').value = ''; document.getElementById('entryDesc').value = ''; document.getElementById('entryPerson').value = ''; }
+    function resetEntryForm() { 
+      document.getElementById('entryAmount').value = ''; 
+      document.getElementById('entryDesc').value = ''; 
+      document.getElementById('entryPerson').value = ''; 
+      editingTxId = null;
+      document.getElementById('saveSubmitBtn').innerHTML = `<i class="fa-solid fa-paper-plane"></i> Save Entry`;
+    }
     function resetFuelForm() { document.getElementById('fuelOdo').value = ''; document.getElementById('fuelPricePerLiter').value = ''; document.getElementById('fuelTotalAmount').value = ''; }
     function resetServiceForm() { document.getElementById('serviceOdo').value = ''; document.getElementById('serviceTotalAmount').value = ''; document.getElementById('serviceNotes').value = ''; }
 
@@ -1139,22 +1146,77 @@
           if (isInc) sumI += amt; else sumE += amt;
           const dtStr = `${String(r.parsedDate.getDate()).padStart(2, '0')}-${String(r.parsedDate.getMonth() + 1).padStart(2, '0')}-${r.parsedDate.getFullYear()}`;
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${dtStr}</td><td><strong>${r.category}</strong><br><small>${r.description || ''}</small></td><td class="badge-amt" style="color:${isInc ? 'var(--income)' : 'var(--expense)'};">${isInc ? '+' : '-'}${userCurrency}${amt.toFixed(2)}</td><td class="action-icons"><i class="fa-solid fa-trash icon-del" onclick="deleteTx('${r.id}')"></i></td>`;
+          tr.innerHTML = `<td>${dtStr}</td>
+                          <td><strong>${r.category}</strong><br><small>${r.description || ''}</small></td>
+                          <td class="badge-amt" style="color:${isInc ? 'var(--income)' : 'var(--expense)'};">${isInc ? '+' : '-'}${userCurrency}${amt.toFixed(2)}</td>
+                          <td class="action-icons">
+                            <i class="fa-solid fa-pen-to-square icon-edit" onclick="editTx('${r.id}')" title="Edit Entry"></i>
+                            <i class="fa-solid fa-trash icon-del" onclick="deleteTx('${r.id}')" title="Delete Entry"></i>
+                          </td>`;
           tbody.appendChild(tr);
         });
       }
       document.getElementById('repIncSum').innerText = userCurrency + sumI.toFixed(2);
       document.getElementById('repExpSum').innerText = userCurrency + sumE.toFixed(2);
     }
-    function deleteTx(id) { db.collection("users").doc(currentUser.uid).collection("transactions").doc(id).delete(); }
+
+    function deleteTx(id) {
+      if (confirm("തീർച്ചയായും ഈ എൻട്രി ഡിലീറ്റ് ചെയ്യണമെന്നുണ്ടോ? (Are you sure you want to delete this record?)")) {
+        db.collection("users").doc(currentUser.uid).collection("transactions").doc(id).delete();
+      }
+    }
+
+    function editTx(id) {
+      const tx = rawData.find(item => item.id === id);
+      if (!tx) return;
+
+      editingTxId = id;
+
+      document.getElementById('entryDate').value = tx.date || todayFormatted;
+      document.getElementById('entryAmount').value = tx.amount || '';
+      document.getElementById('entryDesc').value = tx.description !== '-' ? tx.description : '';
+      document.getElementById('entryPerson').value = tx.person !== '-' ? tx.person : '';
+
+      if (tx.type.includes("Income")) {
+        setMode('income');
+      } else if (tx.type.includes("Expense")) {
+        setMode('expense');
+      } else {
+        setMode('loan');
+        document.getElementById('loanSubtype').value = tx.type;
+        updateEntryType();
+      }
+
+      document.getElementById('entryCategory').value = tx.category;
+      document.getElementById('saveSubmitBtn').innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Update Entry`;
+      
+      switchView('entry');
+    }
 
     function handleTransactionSubmit(e) {
       e.preventDefault();
-      db.collection("users").doc(currentUser.uid).collection("transactions").add({
-        date: document.getElementById('entryDate').value, type: document.getElementById('entryType').value,
-        category: document.getElementById('entryCategory').value, amount: parseFloat(document.getElementById('entryAmount').value) || 0,
-        description: document.getElementById('entryDesc').value || "-", person: document.getElementById('entryPerson').value || "-"
-      }).then(() => { resetEntryForm(); switchView('home'); });
+      const dataToSave = {
+        date: document.getElementById('entryDate').value,
+        type: document.getElementById('entryType').value,
+        category: document.getElementById('entryCategory').value,
+        amount: parseFloat(document.getElementById('entryAmount').value) || 0,
+        description: document.getElementById('entryDesc').value || "-",
+        person: document.getElementById('entryPerson').value || "-"
+      };
+
+      const collRef = db.collection("users").doc(currentUser.uid).collection("transactions");
+
+      if (editingTxId) {
+        collRef.doc(editingTxId).update(dataToSave).then(() => {
+          resetEntryForm();
+          switchView('report');
+        });
+      } else {
+        collRef.add(dataToSave).then(() => {
+          resetEntryForm();
+          switchView('home');
+        });
+      }
     }
 
     /* SPECIAL DAYS & REPORTS */
