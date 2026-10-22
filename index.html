@@ -360,12 +360,18 @@
             <label>Person Name</label>
             <input type="text" id="entryPerson" class="input-box" placeholder="Enter name...">
           </div>
+          
+          <!-- Category with Add Button -->
           <div class="form-group">
             <label>Category</label>
-            <div class="select-wrap">
-              <select id="entryCategory" class="input-box" required></select>
+            <div style="display: flex; gap: 8px;">
+              <div class="select-wrap" style="flex: 1;">
+                <select id="entryCategory" class="input-box" required></select>
+              </div>
+              <button type="button" class="btn-calc" onclick="openAddCategoryModal()" title="Add New Category"><i class="fa-solid fa-plus"></i></button>
             </div>
           </div>
+
           <div class="form-group">
             <label>Amount</label>
             <div class="amount-calc-wrap">
@@ -650,6 +656,24 @@
     </div>
   </div>
 
+  <!-- ADD CATEGORY MODAL -->
+  <div class="modal-overlay" id="addCategoryModal">
+    <div class="modal-dialog" style="max-width: 320px;">
+      <div class="modal-header">
+        <h3>Add New Category</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAddCategoryModal()">✕</button>
+      </div>
+      <div class="form-group">
+        <label>Category Name</label>
+        <input type="text" id="newCategoryName" class="input-box" placeholder="e.g. Shopping, Rent...">
+      </div>
+      <div class="form-actions-group">
+        <button type="button" class="btn-cancel-action" onclick="closeAddCategoryModal()">Cancel</button>
+        <button type="button" class="btn-main btn-save-action" onclick="saveNewCategory()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ADD SPECIAL DAY MODAL -->
   <div class="modal-overlay" id="addSpecialDayModal">
     <div class="modal-dialog">
@@ -858,7 +882,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let currentUser = null, isSignUp = false;
+    let currentUser = null, isSignUp = false, currentMode = 'income';
     let userCurrency = localStorage.getItem('app_currency') || '₹';
     let rawData = [], userVehicles = [], userReminders = [], userSpecialDays = [], activeVehicleId = null;
     let calcTargetInputId = 'entryAmount';
@@ -987,10 +1011,54 @@
       document.getElementById('personGroupField').style.display = (m === 'loan') ? 'block' : 'none';
       document.getElementById('entryType').value = (m === 'expense') ? 'Expense' : (m === 'income' ? 'Income' : 'Loan');
       
+      loadCategoriesForCurrentMode();
+    }
+
+    function loadCategoriesForCurrentMode() {
       const select = document.getElementById('entryCategory');
       select.innerHTML = '';
-      const cats = defaultCategories[m === 'loan' ? 'expense' : m] || [];
-      cats.forEach(c => select.appendChild(new Option(c, c)));
+      const modeKey = (currentMode === 'loan' ? 'expense' : currentMode);
+      
+      let cats = [...(defaultCategories[modeKey] || [])];
+
+      if (!currentUser) return;
+      db.collection("users").doc(currentUser.uid).collection("custom_categories").where("type", "==", modeKey).get().then((snap) => {
+        snap.forEach(doc => {
+          const cName = doc.data().name;
+          if (!cats.includes(cName)) cats.push(cName);
+        });
+        select.innerHTML = '';
+        cats.forEach(c => select.appendChild(new Option(c, c)));
+      });
+    }
+
+    function openAddCategoryModal() {
+      document.getElementById('newCategoryName').value = '';
+      document.getElementById('addCategoryModal').style.display = 'flex';
+    }
+    function closeAddCategoryModal() {
+      document.getElementById('addCategoryModal').style.display = 'none';
+    }
+    function saveNewCategory() {
+      const name = document.getElementById('newCategoryName').value.trim();
+      if (!name) {
+        alert("Please enter a category name.");
+        return;
+      }
+      const modeKey = (currentMode === 'loan' ? 'expense' : currentMode);
+
+      db.collection("users").doc(currentUser.uid).collection("custom_categories").add({
+        type: modeKey,
+        name: name
+      }).then(() => {
+        closeAddCategoryModal();
+        loadCategoriesForCurrentMode();
+        setTimeout(() => {
+          document.getElementById('entryCategory').value = name;
+        }, 200);
+      }).catch(err => {
+        alert("Error adding category: " + err.message);
+      });
     }
 
     function updateEntryType() { document.getElementById('entryType').value = document.getElementById('loanSubtype').value; }
