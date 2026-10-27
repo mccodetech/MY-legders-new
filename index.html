@@ -1554,6 +1554,56 @@
     function calcPush(ch) { expr = (expr === "0" && ch !== ".") ? ch : expr + ch; document.getElementById('calcScreen').value = expr; }
     function calcClear() { expr = ""; document.getElementById('calcScreen').value = "0"; }
     function calcFinish() { try { document.getElementById(calcTargetInputId).value = parseFloat(Function('"use strict";return (' + expr + ')')()).toFixed(2); closeCalc(); } catch { expr = ""; } }
+  async function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPass').value;
+  const alertBox = document.getElementById('authAlert');
+  alertBox.style.display = 'none';
+
+  if (isSignUp) {
+    const confirmPass = document.getElementById('authConfirmPass').value;
+    const name = document.getElementById('authName').value.trim();
+    if (pass !== confirmPass) { 
+      alertBox.className = "status-alert status-error"; 
+      alertBox.innerText = "Passwords do not match!"; 
+      alertBox.style.display = 'block'; 
+      return; 
+    }
+    
+    // Supabase Sign Up
+    const { data, error } = await _supabase.auth.signUp({
+      email: email,
+      password: pass,
+      options: {
+        data: { display_name: name }
+      }
+    });
+
+    if (error) {
+      alertBox.className = "status-alert status-error"; 
+      alertBox.innerText = error.message; 
+      alertBox.style.display = 'block';
+    } else {
+      alertBox.className = "status-alert status-success"; 
+      alertBox.innerText = "Account created successfully! Please login."; 
+      alertBox.style.display = 'block';
+    }
+
+  } else {
+    // Supabase Sign In (Login)
+    const { data, error } = await _supabase.auth.signInWithPassword({
+      email: email,
+      password: pass,
+    });
+
+    if (error) {
+      alertBox.className = "status-alert status-error"; 
+      alertBox.innerText = "Incorrect email or password!"; 
+      alertBox.style.display = 'block';
+    }
+  }
+}
   </script>
 </body>
 </html>
