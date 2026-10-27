@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0284c7">
@@ -17,10 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
   
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 
   <style>
     :root {
@@ -868,19 +867,10 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAke_55q75eiJSnzmZMMaiB0QGe8lHnlWU",
-      authDomain: "ledgers-new.firebaseapp.com",
-      projectId: "ledgers-new",
-      storageBucket: "ledgers-new.firebasestorage.app",
-      messagingSenderId: "28027966329",
-      appId: "1:28027966329:web:42d0c48a31d2c047b195a8",
-      measurementId: "G-J2Y126PXZ4"
-    };
+    const SUPABASE_URL = 'https://utjecjquyinurvggzgvl.supabase.co';
+   const SUPABASE_ANON_KEY = 'sb_publishable_Ojv5vbqffTdF7s96D9IDzA_zzUJraaM';
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null, isSignUp = false, currentMode = 'income';
     let userCurrency = localStorage.getItem('app_currency') || '₹';
