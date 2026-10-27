@@ -1254,6 +1254,17 @@
     function calcPush(ch) { expr = (expr === "0" && ch !== ".") ? ch : expr + ch; document.getElementById('calcScreen').value = expr; }
     function calcClear() { expr = ""; document.getElementById('calcScreen').value = "0"; }
     function calcFinish() { try { document.getElementById(calcTargetInputId).value = parseFloat(Function('"use strict";return (' + expr + ')')()).toFixed(2); closeCalc(); } catch { expr = ""; } }
+    // Password visibility toggle function
+function togglePassVisibility(fieldId, iconEl) {
+  const input = document.getElementById(fieldId);
+  if (input.type === "password") {
+    input.type = "text";
+    iconEl.className = "fa-solid fa-eye-slash toggle-eye";
+  } else {
+    input.type = "password";
+    iconEl.className = "fa-solid fa-eye toggle-eye";
+  }
+}
   </script>
 </body>
 </html>
